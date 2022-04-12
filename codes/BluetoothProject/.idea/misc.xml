@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="DesignSurface">
+    <option name="filePathToZoomLevelMap">
+      <map>
+        <entry key="app/src/main/res/drawable/borderline.xml" value="0.1495" />
+        <entry key="app/src/main/res/drawable/seekbar_sb.xml" value="0.212" />
+        <entry key="app/src/main/res/drawable/seekbar_thumb.xml" value="0.212" />
+        <entry key="app/src/main/res/drawable/selector_switch.xml" value="0.2085" />
+        <entry key="app/src/main/res/drawable/shape_switch_thumb.xml" value="0.2085" />
+        <entry key="app/src/main/res/drawable/shape_switch_track_off.xml" value="0.2085" />
+        <entry key="app/src/main/res/drawable/shape_switch_track_on.xml" value="0.2085" />
+        <entry key="app/src/main/res/layout/activity_main.xml" value="0.25" />
+        <entry key="app/src/main/res/layout/child.xml" value="0.3098958333333333" />
+        <entry key="app/src/main/res/layout/child_tb.xml" value="0.3098958333333333" />
+        <entry key="app/src/main/res/layout/child_ti.xml" value="0.3098958333333333" />
+        <entry key="app/src/main/res/layout/child_tr.xml" value="0.3098958333333333" />
+        <entry key="app/src/main/res/layout/child_ts.xml" value="0.165" />
+        <entry key="app/src/main/res/layout/child_tsb.xml" value="0.25" />
+        <entry key="app/src/main/res/layout/child_tsp.xml" value="0.184375" />
+        <entry key="app/src/main/res/layout/child_tt.xml" value="0.3098958333333333" />
+        <entry key="app/src/main/res/layout/intro.xml" value="0.165" />
+        <entry key="app/src/main/res/layout/parent.xml" value="0.25" />
+        <entry key="app/src/main/res/layout/spinner_item.xml" value="0.17916666666666667" />
+      </map>
+    </option>
+  </component>
+  <component name="ProjectRootManager" version="2" languageLevel="JDK_11" default="true" project-jdk-name="Android Studio default JDK" project-jdk-type="JavaSDK">
+    <output url="file://$PROJECT_DIR$/build/classes" />
+  </component>
+  <component name="ProjectType">
+    <option name="id" value="Android" />
+  </component>
+</project>
