@@ -12,6 +12,7 @@ import android.app.NotificationManager;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.media.AudioManager;
 import android.os.Build;
 import android.os.Bundle;
@@ -19,6 +20,7 @@ import android.provider.Settings;
 import android.speech.tts.TextToSpeech;
 import android.util.Log;
 import android.widget.SeekBar;
+import android.widget.Switch;
 
 import com.pedro.library.AutoPermissions;
 import com.pedro.library.AutoPermissionsListener;
@@ -31,7 +33,9 @@ public class MainActivity extends AppCompatActivity implements AutoPermissionsLi
 
     private RecyclerView recyclerView;
     private static TextToSpeech tts;
-
+    private boolean sender_check;
+    private boolean content_check;
+    private boolean time_check;
 
     @RequiresApi(api = Build.VERSION_CODES.O_MR1)
     @Override
@@ -43,7 +47,7 @@ public class MainActivity extends AppCompatActivity implements AutoPermissionsLi
         AutoPermissions.Companion.loadAllPermissions(this, 101);
 
 
-        if(!permissionGranted()) {
+        if (!permissionGranted()) {
             startActivity(new Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS));
         }
 
@@ -62,18 +66,15 @@ public class MainActivity extends AppCompatActivity implements AutoPermissionsLi
         sound.invisibleChildren = new ArrayList<>();
         sound.invisibleChildren.add(new ExpandableListAdapter.Item(ExpandableListAdapter.CHILD_TSB, "볼륨"));
         sound.invisibleChildren.add(new ExpandableListAdapter.Item(ExpandableListAdapter.CHILD_TSP, "읽기 속도"));
-        //sound.invisibleChildren.add(new ExpandableListAdapter.Item(ExpandableListAdapter.CHILD_TS, "진동 알림"));
+        sound.invisibleChildren.add(new ExpandableListAdapter.Item(ExpandableListAdapter.CHILD_ATS, "진동 알림"));
         data.add(sound);
 
         ExpandableListAdapter.Item text = new ExpandableListAdapter.Item(ExpandableListAdapter.HEADER, "텍스트 내용 설정");
         text.invisibleChildren = new ArrayList<>();
         text.invisibleChildren.add(new ExpandableListAdapter.Item(ExpandableListAdapter.CHILD_STS, "발신자"));
-        text.invisibleChildren.add(new ExpandableListAdapter.Item(ExpandableListAdapter.CHILD_CTS, "발신내용"));
         text.invisibleChildren.add(new ExpandableListAdapter.Item(ExpandableListAdapter.CHILD_DTS, "발신시간"));
         data.add(text);
         recyclerView.setAdapter(new ExpandableListAdapter(data));
-
-
     }
 
     @RequiresApi(api = Build.VERSION_CODES.O_MR1)

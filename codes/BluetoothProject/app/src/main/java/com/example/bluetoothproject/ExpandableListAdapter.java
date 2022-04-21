@@ -1,13 +1,16 @@
 package com.example.bluetoothproject;
 
 import static android.content.Context.AUDIO_SERVICE;
+import static android.content.Intent.FLAG_ACTIVITY_NEW_TASK;
 
 import android.annotation.SuppressLint;
+import android.app.appsearch.GetByDocumentIdRequest;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.media.AudioManager;
 import android.provider.Settings;
 import android.service.notification.NotificationListenerService;
@@ -26,10 +29,11 @@ import android.widget.Switch;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
+
 import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 public class ExpandableListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
@@ -39,15 +43,19 @@ public class ExpandableListAdapter extends RecyclerView.Adapter<RecyclerView.Vie
     public static final int CHILD_TI = 3;
     public static final int CHILD_TSB = 4;
     public static final int CHILD_TSP = 5;
-    public static final int CHILD_STS = 6;
-    public static final int CHILD_CTS = 7;
+    public static final int CHILD_ATS = 6;
+    public static final int CHILD_STS = 7;
     public static final int CHILD_DTS = 8;
 
     Context context;
     BluetoothAdapter bAdapter = BluetoothAdapter.getDefaultAdapter();
     private String bDevice;
+    Intent intent;
+    View view;
 
-    private List<Item> data;
+    private final List<Item> data;
+
+
 
     public ExpandableListAdapter(List<Item> data) {
         this.data = data;
@@ -59,7 +67,7 @@ public class ExpandableListAdapter extends RecyclerView.Adapter<RecyclerView.Vie
         public void onReceive(Context context, Intent intent) {
             String action = intent.getAction();
             BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
-            if(BluetoothDevice.ACTION_ACL_CONNECTED.equals(action)){
+            if (BluetoothDevice.ACTION_ACL_CONNECTED.equals(action)) {
                 bDevice = device.getName().toString();
             }
 
@@ -67,9 +75,9 @@ public class ExpandableListAdapter extends RecyclerView.Adapter<RecyclerView.Vie
     };
 
 
+    @NonNull
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int type) {
-        View view;
         context = parent.getContext();
         switch (type) {
             case HEADER:
@@ -100,21 +108,24 @@ public class ExpandableListAdapter extends RecyclerView.Adapter<RecyclerView.Vie
             case CHILD_TSP:
                 LayoutInflater inflater4 = (LayoutInflater) parent.getContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
                 view = inflater4.inflate(R.layout.child_tsp, parent, false);
+                intent = new Intent(view.getContext(), NotificationListener.class);
                 ListChildTSPViewHolder child_tsp = new ListChildTSPViewHolder(view);
                 return child_tsp;
-            case CHILD_STS:
+            case CHILD_ATS:
                 LayoutInflater inflater5 = (LayoutInflater) parent.getContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-                view = inflater5.inflate(R.layout.child_ts, parent, false);
+                view = inflater5.inflate(R.layout.child_ats, parent, false);
+                ListChildATSViewHolder child_ats = new ListChildATSViewHolder(view);
+                return child_ats;
+            case CHILD_STS:
+                LayoutInflater inflater6 = (LayoutInflater) parent.getContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+                view = inflater6.inflate(R.layout.child_sts, parent, false);
+                intent = new Intent(view.getContext(), NotificationListener.class);
                 ListChildSTSViewHolder child_sts = new ListChildSTSViewHolder(view);
                 return child_sts;
-            case CHILD_CTS:
-                LayoutInflater inflater6 = (LayoutInflater) parent.getContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-                view = inflater6.inflate(R.layout.child_ts, parent, false);
-                ListChildCTSViewHolder child_cts = new ListChildCTSViewHolder(view);
-                return child_cts;
             case CHILD_DTS:
                 LayoutInflater inflater7 = (LayoutInflater) parent.getContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-                view = inflater7.inflate(R.layout.child_ts, parent, false);
+                view = inflater7.inflate(R.layout.child_dts, parent, false);
+                intent = new Intent(view.getContext(), NotificationListener.class);
                 ListChildDTSViewHolder child_dts = new ListChildDTSViewHolder(view);
                 return child_dts;
 
@@ -125,12 +136,13 @@ public class ExpandableListAdapter extends RecyclerView.Adapter<RecyclerView.Vie
     @Override
     public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
         final Item item = data.get(position);
-        switch(item.type) {
+
+        switch (item.type) {
             case HEADER:
                 final ListHeaderViewHolder itemController = (ListHeaderViewHolder) holder;
                 itemController.refferalItem = item;
                 itemController.header_title.setText(item.text1);
-                if(item.invisibleChildren == null) {
+                if (item.invisibleChildren == null) {
                     itemController.btn_expand_toggle.setImageResource(R.drawable.up);
                 } else {
                     itemController.btn_expand_toggle.setImageResource(R.drawable.down);
@@ -142,13 +154,14 @@ public class ExpandableListAdapter extends RecyclerView.Adapter<RecyclerView.Vie
                             item.invisibleChildren = new ArrayList<Item>();
                             int count = 0;
                             int pos = data.indexOf(itemController.refferalItem);
-                            while (data.size() > pos + 1 && (data.get(pos + 1).type == CHILD_TS || data.get(pos +1 ).type == CHILD_TT || data.get(pos+1).type == CHILD_TI
-                            || data.get(pos + 1).type == CHILD_TSB || data.get(pos+1).type == CHILD_TSP || data.get(pos+1).type == CHILD_STS
-                            || data.get(pos + 1).type == CHILD_CTS || data.get(pos+1).type == CHILD_DTS)){
+                            while (data.size() > pos + 1 && (data.get(pos + 1).type == CHILD_TS || data.get(pos + 1).type == CHILD_TT || data.get(pos + 1).type == CHILD_TI
+                                    || data.get(pos + 1).type == CHILD_TSB || data.get(pos + 1).type == CHILD_TSP || data.get(pos + 1).type == CHILD_STS
+                                    || data.get(pos + 1).type == CHILD_ATS || data.get(pos + 1).type == CHILD_DTS)) {
                                 item.invisibleChildren.add(data.remove(pos + 1));
                                 count++;
                             }
                             notifyItemRangeRemoved(pos + 1, count);
+                            notifyDataSetChanged();
                             itemController.btn_expand_toggle.setImageResource(R.drawable.down);
                         } else {
                             int pos = data.indexOf(itemController.refferalItem);
@@ -158,6 +171,7 @@ public class ExpandableListAdapter extends RecyclerView.Adapter<RecyclerView.Vie
                                 index++;
                             }
                             notifyItemRangeInserted(pos + 1, index - pos - 1);
+                            notifyDataSetChanged();
                             itemController.btn_expand_toggle.setImageResource(R.drawable.up);
                             item.invisibleChildren = null;
                         }
@@ -165,6 +179,7 @@ public class ExpandableListAdapter extends RecyclerView.Adapter<RecyclerView.Vie
                 });
                 break;
             case CHILD_TS:
+                //블루투스 on/off
                 final ListChildTSViewHolder itemController1 = (ListChildTSViewHolder) holder;
                 itemController1.refferalItem = item;
                 itemController1.child_title.setText(item.text1);
@@ -201,6 +216,7 @@ public class ExpandableListAdapter extends RecyclerView.Adapter<RecyclerView.Vie
 
                 break;
             case CHILD_TT:
+                //연결된 기기
                 final ListChildTTViewHolder itemController2 = (ListChildTTViewHolder) holder;
                 itemController2.refferalItem = item;
                 itemController2.child_title.setText(item.text1);
@@ -209,6 +225,7 @@ public class ExpandableListAdapter extends RecyclerView.Adapter<RecyclerView.Vie
 
                 break;
             case CHILD_TI:
+                //블루투스 설정 들어가는 부분
                 final ListChildTIViewHolder itemController3 = (ListChildTIViewHolder) holder;
                 itemController3.refferalItem = item;
                 itemController3.child_title.setText(item.text1);
@@ -222,6 +239,7 @@ public class ExpandableListAdapter extends RecyclerView.Adapter<RecyclerView.Vie
                 });
                 break;
             case CHILD_TSB:
+                //음량 조절하는 부분
                 final ListChildTSBViewHolder itemController4 = (ListChildTSBViewHolder) holder;
                 itemController4.refferalItem = item;
                 itemController4.child_title.setText(item.text1);
@@ -253,6 +271,7 @@ public class ExpandableListAdapter extends RecyclerView.Adapter<RecyclerView.Vie
 
                 break;
             case CHILD_TSP:
+                //음성 속도 조절하는 부분
                 final ListChildTSPViewHolder itemController5 = (ListChildTSPViewHolder) holder;
                 itemController5.refferalItem = item;
                 itemController5.child_title.setText(item.text1);
@@ -261,18 +280,29 @@ public class ExpandableListAdapter extends RecyclerView.Adapter<RecyclerView.Vie
                 adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
                 itemController5.spinner.setAdapter(adapter);
 
+                SharedPreferences sharedPreferences = context.getSharedPreferences("pref", Context.MODE_PRIVATE);
+                int posi = 0;
+                float speed = sharedPreferences.getFloat("speed", 0);
+                Log.i("speed_value", String.valueOf(speed));
+                if(speed == 0.5) posi = 0;
+                else if(speed == 1.0) posi = 1;
+                else if(speed == 1.5) posi = 2;
+                else if(speed == 2.0) posi = 3;
+
+                itemController5.spinner.setSelection(posi);
 
                 itemController5.spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
                     @Override
                     public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
-                        float f = Float.parseFloat(itemController5.spinner.getSelectedItem().toString());
-                        Intent intent = new Intent(context, NotificationListener.class);
-                        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                        intent.putExtra("speed_value", f);
+                        SharedPreferences spf = context.getSharedPreferences("pref", Context.MODE_PRIVATE);
+                        SharedPreferences.Editor editor = spf.edit();
+                        float speed = Float.parseFloat(itemController5.spinner.getSelectedItem().toString());
 
-                        context.startService(intent);
+                        editor.putFloat("speed", speed);
+                        editor.commit();
+                        intent.putExtra("speed_value", speed);
+                        view.getContext().startService(intent);
                     }
-
                     @Override
                     public void onNothingSelected(AdapterView<?> adapterView) {
 
@@ -280,67 +310,53 @@ public class ExpandableListAdapter extends RecyclerView.Adapter<RecyclerView.Vie
                 });
 
                 break;
-            case CHILD_STS:
-                final ListChildSTSViewHolder itemController6 = (ListChildSTSViewHolder) holder;
+            case CHILD_ATS:
+                //진동 on/off
+                final ListChildATSViewHolder itemController6 = (ListChildATSViewHolder) holder;
                 itemController6.refferalItem = item;
                 itemController6.child_title.setText(item.text1);
 
                 itemController6.aSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
                     @Override
-                    public void onCheckedChanged(CompoundButton compoundButton, boolean isChecked) {
-                        Intent intent = new Intent(context, NotificationListener.class);
-                        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                        if(isChecked) {
-                            intent.putExtra("sender_check", true);
-                        } else {
-                            intent.putExtra("sender_check", false);
-                        }
-                        context.startService(intent);
+                    public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
+
                     }
                 });
-
                 break;
-
-            case CHILD_CTS:
-                final ListChildCTSViewHolder itemController7 = (ListChildCTSViewHolder) holder;
+            case CHILD_STS:
+                //발신자 on/off
+                final ListChildSTSViewHolder itemController7 = (ListChildSTSViewHolder) holder;
                 itemController7.refferalItem = item;
                 itemController7.child_title.setText(item.text1);
+                itemController7.aSwitch.setChecked(itemController7.aSwitch.isChecked());
 
                 itemController7.aSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
                     @Override
                     public void onCheckedChanged(CompoundButton compoundButton, boolean isChecked) {
-                        Intent intent = new Intent(context, NotificationListener.class);
-                        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                        if(isChecked) {
-                            intent.putExtra("content_check", true);
-                        } else {
-                            intent.putExtra("content_check", false);
-                        }
-                        context.startService(intent);
+                        intent.putExtra("sender_check", isChecked);
+                        view.getContext().startService(intent);
                     }
                 });
                 break;
+
             case CHILD_DTS:
+                //발신 시간 on/off
                 final ListChildDTSViewHolder itemController8 = (ListChildDTSViewHolder) holder;
                 itemController8.refferalItem = item;
                 itemController8.child_title.setText(item.text1);
+                itemController8.aSwitch.setChecked(itemController8.aSwitch.isChecked());
 
                 itemController8.aSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
                     @Override
                     public void onCheckedChanged(CompoundButton compoundButton, boolean isChecked) {
-                        Intent intent = new Intent(context, NotificationListener.class);
-                        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                        if(isChecked) {
-                            intent.putExtra("time_check", true);
-                        } else {
-                            intent.putExtra("time_check", false);
-                        }
-                        context.startService(intent);
+                        intent.putExtra("time_check", isChecked);
+                        view.getContext().startService(intent);
                     }
                 });
-                break;
 
+                break;
         }
+
     }
 
     @Override
@@ -390,7 +406,7 @@ public class ExpandableListAdapter extends RecyclerView.Adapter<RecyclerView.Vie
         }
     }
 
-    private static class ListChildTIViewHolder extends RecyclerView.ViewHolder{
+    private static class ListChildTIViewHolder extends RecyclerView.ViewHolder {
         public TextView child_title;
         public ImageView btn_setting_toggle;
         public Item refferalItem;
@@ -401,6 +417,7 @@ public class ExpandableListAdapter extends RecyclerView.Adapter<RecyclerView.Vie
             btn_setting_toggle = itemView.findViewById(R.id.btn_setting_toggle);
         }
     }
+
     public static class ListChildTSBViewHolder extends RecyclerView.ViewHolder {
         public TextView child_title;
         public SeekBar seekBar;
@@ -412,6 +429,7 @@ public class ExpandableListAdapter extends RecyclerView.Adapter<RecyclerView.Vie
             seekBar = (SeekBar) itemView.findViewById(R.id.seekBar);
         }
     }
+
     public static class ListChildTSPViewHolder extends RecyclerView.ViewHolder {
         public TextView child_title;
         public Spinner spinner;
@@ -423,26 +441,26 @@ public class ExpandableListAdapter extends RecyclerView.Adapter<RecyclerView.Vie
             spinner = (Spinner) itemView.findViewById(R.id.spinner);
         }
     }
+    public static class ListChildATSViewHolder extends RecyclerView.ViewHolder {
+        public TextView child_title;
+        public Switch aSwitch;
+        public Item refferalItem;
 
+        public ListChildATSViewHolder(@NonNull View itemView) {
+            super(itemView);
+            child_title = (TextView) itemView.findViewById(R.id.child_title_ats);
+            aSwitch = itemView.findViewById(R.id.alarm_check);
+        }
+    }
     public static class ListChildSTSViewHolder extends RecyclerView.ViewHolder {
         public TextView child_title;
         public Switch aSwitch;
         public Item refferalItem;
+
         public ListChildSTSViewHolder(@NonNull View itemView) {
             super(itemView);
-            child_title = (TextView) itemView.findViewById(R.id.child_title_ts);
-            aSwitch = itemView.findViewById(R.id.sw);
-        }
-    }
-
-    public static class ListChildCTSViewHolder extends RecyclerView.ViewHolder {
-        public TextView child_title;
-        public Switch aSwitch;
-        public Item refferalItem;
-        public ListChildCTSViewHolder(@NonNull View itemView) {
-            super(itemView);
-            child_title = (TextView) itemView.findViewById(R.id.child_title_ts);
-            aSwitch = itemView.findViewById(R.id.sw);
+            child_title = (TextView) itemView.findViewById(R.id.child_title_sts);
+            aSwitch = itemView.findViewById(R.id.sender_check);
         }
     }
 
@@ -450,10 +468,11 @@ public class ExpandableListAdapter extends RecyclerView.Adapter<RecyclerView.Vie
         public TextView child_title;
         public Switch aSwitch;
         public Item refferalItem;
+
         public ListChildDTSViewHolder(@NonNull View itemView) {
             super(itemView);
-            child_title = (TextView) itemView.findViewById(R.id.child_title_ts);
-            aSwitch = itemView.findViewById(R.id.sw);
+            child_title = (TextView) itemView.findViewById(R.id.child_title_dts);
+            aSwitch = itemView.findViewById(R.id.time_check);
         }
     }
 
@@ -471,4 +490,6 @@ public class ExpandableListAdapter extends RecyclerView.Adapter<RecyclerView.Vie
             this.text1 = text1;
         }
     }
+
+
 }
