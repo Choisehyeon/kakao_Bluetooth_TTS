@@ -2,14 +2,14 @@
 <layer-list xmlns:android="http://schemas.android.com/apk/res/android">
     <item android:id="@android:id/background">
     <shape android:shape="line">
-        <stroke android:width="2dp" android:color="#D3D3D3" />
+        <stroke android:width="2dp" android:color="#fae6e1" />
     </shape>
     </item>
 
     <item android:id="@android:id/progress">
         <clip>
             <shape android:shape="line">
-                <stroke android:width="2dp" android:color="#000000" />
+                <stroke android:width="2dp" android:color="#e75469" />
             </shape>
         </clip>
     </item>

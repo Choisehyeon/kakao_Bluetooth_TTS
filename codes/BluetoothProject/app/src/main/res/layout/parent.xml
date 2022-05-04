@@ -12,8 +12,7 @@
         android:layout_height="90dp"
         android:layout_marginTop="40dp"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        android:backgroundTint="#C0EDA6">
+        app:layout_constraintTop_toTopOf="parent">
 
         <TextView
             android:id="@+id/header_title"
@@ -23,7 +22,7 @@
             android:layout_marginTop="20dp"
             android:gravity="center_vertical"
             android:includeFontPadding="false"
-            android:textColor="#000000"
+            android:textColor="#E3747B"
             android:fontFamily="@font/ydestreetb"
             android:textSize="25dp"
             android:textStyle="bold"

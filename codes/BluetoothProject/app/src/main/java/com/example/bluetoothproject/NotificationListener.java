@@ -27,9 +27,10 @@ import java.util.Locale;
 public class NotificationListener extends NotificationListenerService {
 
     private TextToSpeech tts;
-    private float speed;
+    private float speed = 1.0F;
     private boolean sender_check  = false;
     private boolean time_check  = false;
+    private boolean func_check = true;
 
     @Override
     public void onCreate() {
@@ -57,11 +58,16 @@ public class NotificationListener extends NotificationListenerService {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         Log.i("NotificationListener", "Started");
+        processCommand(intent);
+        return super.onStartCommand(intent, flags, startId);
+    }
+
+    public void processCommand(Intent intent) {
         speed = intent.getFloatExtra("speed_value", 0);
         tts.setSpeechRate(speed);
         sender_check = intent.getBooleanExtra("sender_check", false);
         time_check = intent.getBooleanExtra("time_check", false);
-        return super.onStartCommand(intent, flags, startId);
+        func_check = intent.getBooleanExtra("fuc_check", true);
     }
 
     @Override
@@ -83,8 +89,9 @@ public class NotificationListener extends NotificationListenerService {
                 Log.i("speed_value", String.valueOf(speed));
                 Log.i("sender_check", String.valueOf(sender_check));
                 Log.i("time_check", String.valueOf(time_check));
+                Log.i("func_check", String.valueOf(func_check));
 
-                if(!message.equals(null)) {
+                if(!message.equals(null) && func_check) {
                     if(sender_check ) {
                         result += sender;
                     }

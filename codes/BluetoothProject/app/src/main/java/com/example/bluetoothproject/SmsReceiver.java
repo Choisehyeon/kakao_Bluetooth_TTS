@@ -38,7 +38,6 @@ public class SmsReceiver extends BroadcastReceiver {
     }
 
 
-
     private SmsMessage[] parseSmsMessage(Bundle bundle) {
         Object[] objs = (Object[]) bundle.get("pdus");
         SmsMessage[] messages = new SmsMessage[objs.length];

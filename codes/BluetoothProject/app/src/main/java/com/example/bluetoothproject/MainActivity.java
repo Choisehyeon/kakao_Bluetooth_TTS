@@ -1,37 +1,43 @@
 package com.example.bluetoothproject;
 
-import static android.util.Log.ERROR;
-
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.NotificationManagerCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.Manifest;
+import android.annotation.SuppressLint;
+import android.app.AlertDialog;
+import android.app.Notification;
 import android.app.NotificationManager;
 import android.content.ComponentName;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.SharedPreferences;
-import android.media.AudioManager;
+import android.content.pm.ActivityInfo;
+import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.speech.tts.TextToSpeech;
-import android.util.Log;
-import android.widget.SeekBar;
-import android.widget.Switch;
+import android.view.View;
+import android.widget.Button;
+import android.widget.CompoundButton;
 import android.widget.Toast;
 
+import com.example.bluetoothproject.databinding.ActivityMain1Binding;
 import com.pedro.library.AutoPermissions;
 import com.pedro.library.AutoPermissionsListener;
+import com.sothree.slidinguppanel.SlidingUpPanelLayout;
+
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 
 public class MainActivity extends AppCompatActivity implements AutoPermissionsListener{
 
+    private ActivityMain1Binding binding;
     private RecyclerView recyclerView;
     private static TextToSpeech tts;
     private boolean sender_check;
@@ -42,11 +48,18 @@ public class MainActivity extends AppCompatActivity implements AutoPermissionsLi
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         setContentView(R.layout.activity_main);
+        binding = ActivityMain1Binding.inflate(getLayoutInflater());
 
+
+        setContentView(binding.getRoot());
+
+        SlidingUpPanelLayout sliding = binding.mainFrame;
+
+        Intent intent = new Intent(MainActivity.this, NotificationListener.class);
 
         AutoPermissions.Companion.loadAllPermissions(this, 101);
-
 
         if (!permissionGranted()) {
             startActivity(new Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS));
@@ -57,9 +70,37 @@ public class MainActivity extends AppCompatActivity implements AutoPermissionsLi
             Toast.makeText(getApplicationContext(), "권한을 허용해주세요", Toast.LENGTH_LONG).show();
             startActivity(new Intent(android.provider.Settings.ACTION_NOTIFICATION_POLICY_ACCESS_SETTINGS));
         }
+        binding.speakingOnoff.setImageResource(R.drawable.speaking_on);
+        binding.imageOn.setImageResource(R.drawable.on);
+        binding.imageOff.setImageResource(R.drawable.off_trans);
 
-        recyclerView = findViewById(R.id.recyclerview);
-        recyclerView.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false));
+        binding.imageOn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                sliding.setTouchEnabled(true);
+                binding.lockview.setImageResource(R.drawable.unlock);
+                binding.imageOn.setImageResource(R.drawable.on);
+                binding.imageOff.setImageResource(R.drawable.off_trans);
+                binding.speakingOnoff.setImageResource(R.drawable.speaking_on);
+                intent.putExtra("fuc_check", true);
+                startService(intent);
+            }
+        });
+
+        binding.imageOff.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                sliding.setTouchEnabled(false);
+                binding.lockview.setImageResource(R.drawable.lock);
+                binding.imageOn.setImageResource(R.drawable.on_trans);
+                binding.imageOff.setImageResource(R.drawable.off);
+                binding.speakingOnoff.setImageResource(R.drawable.speaking_off);
+                intent.putExtra("fuc_check", false);
+                startService(intent);
+            }
+        });
+
+        binding.recyclerview.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false));
         List<ExpandableListAdapter.Item> data = new ArrayList<>();
 
         ExpandableListAdapter.Item ble = new ExpandableListAdapter.Item(ExpandableListAdapter.HEADER, "블루투스 연결");
@@ -81,7 +122,7 @@ public class MainActivity extends AppCompatActivity implements AutoPermissionsLi
         text.invisibleChildren.add(new ExpandableListAdapter.Item(ExpandableListAdapter.CHILD_TS, "발신자"));
         text.invisibleChildren.add(new ExpandableListAdapter.Item(ExpandableListAdapter.CHILD_TS, "발신시간"));
         data.add(text);
-        recyclerView.setAdapter(new ExpandableListAdapter(data));
+        binding.recyclerview.setAdapter(new ExpandableListAdapter(data));
     }
 
     @RequiresApi(api = Build.VERSION_CODES.O_MR1)

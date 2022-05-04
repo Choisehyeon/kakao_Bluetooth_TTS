@@ -6,7 +6,7 @@
     android:layout_height="60dp"
     android:layout_marginLeft="20dp"
     android:layout_marginRight="20dp"
-    android:backgroundTint="#FFF7BC"
+    android:backgroundTint="#ec93a7"
     android:background="@drawable/borderline">
 
     <TextView
@@ -16,7 +16,7 @@
         android:layout_marginStart="20dp"
         android:layout_marginTop="20dp"
         android:includeFontPadding="false"
-        android:textColor="#000000"
+        android:textColor="#FFFFFF"
         android:textSize="20dp"
         android:gravity="center_vertical"
         android:fontFamily="@font/yestreetl"
@@ -25,11 +25,13 @@
 
     <TextView
         android:id="@+id/child_content"
+        android:textColor="#fae6e1"
         android:layout_width="wrap_content"
         android:includeFontPadding="false"
         android:layout_height="20dp"
         android:layout_marginTop="20dp"
         android:layout_marginEnd="20dp"
+        android:fontFamily="@font/yestreetl"
         android:gravity="center_vertical"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent" />

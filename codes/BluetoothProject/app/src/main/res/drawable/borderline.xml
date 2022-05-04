@@ -12,8 +12,9 @@
                 android:bottomRightRadius="12dp"
                 android:topLeftRadius="12dp"
                 android:topRightRadius="12dp" />
-
-
+            <stroke
+                android:width="3dp"
+                android:color="#E3747B"/>
 
             <solid android:color="#FFF" />
 

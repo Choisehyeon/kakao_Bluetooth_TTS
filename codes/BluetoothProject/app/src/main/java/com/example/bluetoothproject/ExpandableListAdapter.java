@@ -3,6 +3,7 @@ package com.example.bluetoothproject;
 import static android.content.Context.AUDIO_SERVICE;
 import static android.content.Intent.FLAG_ACTIVITY_NEW_TASK;
 
+import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.appsearch.GetByDocumentIdRequest;
 import android.bluetooth.BluetoothAdapter;
@@ -11,6 +12,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.media.AudioManager;
 import android.provider.Settings;
 import android.service.notification.NotificationListenerService;
@@ -30,6 +32,7 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 
+import androidx.core.app.ActivityCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
 import java.sql.Struct;
@@ -64,9 +67,10 @@ public class ExpandableListAdapter extends RecyclerView.Adapter<RecyclerView.Vie
         @SuppressLint("MissingPermission")
         public void onReceive(Context context, Intent intent) {
             String action = intent.getAction();
-            BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
+            BluetoothDevice device = (BluetoothDevice) intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
             if (BluetoothDevice.ACTION_ACL_CONNECTED.equals(action)) {
-                bDevice = device.getName().toString();
+                bDevice = device.getName();
+                return;
             }
 
         }//end onReceive
@@ -197,6 +201,11 @@ public class ExpandableListAdapter extends RecyclerView.Adapter<RecyclerView.Vie
                 if(item.text1.equals("진동 알림")) {
                     AudioManager audioManager;
                     audioManager = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
+                    if (audioManager.getRingerMode() == AudioManager.RINGER_MODE_VIBRATE) {
+                        itemController1.aSwitch.setChecked(true);
+                    } else {
+                        itemController1.aSwitch.setChecked(false);
+                    }
                     itemController1.aSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
                         @SuppressLint("MissingPermission")
                         @Override
@@ -240,7 +249,11 @@ public class ExpandableListAdapter extends RecyclerView.Adapter<RecyclerView.Vie
                 final ListChildTTViewHolder itemController2 = (ListChildTTViewHolder) holder;
                 itemController2.refferalItem = item;
                 itemController2.child_title.setText(item.text1);
-                itemController2.child_content.setText(bDevice);
+                if(bDevice == null) {
+                    itemController2.child_content.setText("없음");
+                } else {
+                    itemController2.child_content.setText(bDevice.toString());
+                }
 
 
                 break;
@@ -296,7 +309,7 @@ public class ExpandableListAdapter extends RecyclerView.Adapter<RecyclerView.Vie
                 itemController5.refferalItem = item;
                 itemController5.child_title.setText(item.text1);
 
-                ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(context, R.array.speed, android.R.layout.simple_spinner_item);
+                ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(context, R.array.speed, R.layout.spinner_item);
                 adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
                 itemController5.spinner.setAdapter(adapter);
 
