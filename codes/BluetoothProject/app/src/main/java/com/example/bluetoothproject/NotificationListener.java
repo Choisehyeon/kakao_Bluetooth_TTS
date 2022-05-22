@@ -36,6 +36,7 @@ public class NotificationListener extends NotificationListenerService {
     public void onCreate() {
         super.onCreate();
 
+        //TTS api 사용
         tts = new TextToSpeech(this, new TextToSpeech.OnInitListener() {
             @Override
             public void onInit(int status) {
@@ -63,6 +64,7 @@ public class NotificationListener extends NotificationListenerService {
     }
 
     public void processCommand(Intent intent) {
+        //intent로 보내진 값들을 받아옴
         speed = intent.getFloatExtra("speed_value", 0);
         tts.setSpeechRate(speed);
         sender_check = intent.getBooleanExtra("sender_check", false);
@@ -76,6 +78,7 @@ public class NotificationListener extends NotificationListenerService {
 
         String result = "";
         String pack = sbn.getPackageName();
+        //카카오톡으로 오는 알림을 읽도록 함.
         if (pack.equals("com.kakao.talk")) {
             Notification notification = sbn.getNotification();
             Bundle bundle = notification.extras;
@@ -91,11 +94,18 @@ public class NotificationListener extends NotificationListenerService {
                 Log.i("time_check", String.valueOf(time_check));
                 Log.i("func_check", String.valueOf(func_check));
 
-                if(!message.equals(null) && func_check) {
+                //message가 null이 아니거나 기능을 사용할 때 tts.speak 사용
+                if(message != null && func_check) {
                     if(sender_check ) {
                         result += sender;
                     }
-                    result += message;
+
+                    if(message.length() >= 20) {
+                        result += "장문의 메세지이니 나중에 확인하시기 바랍니다.";
+                    }
+                    else {
+                        result += message;
+                    }
                     if(time_check) {
                         result += current;
                     }
@@ -118,12 +128,13 @@ public class NotificationListener extends NotificationListenerService {
         super.onListenerDisconnected();
     }
 
-   /* @Override
+    @Override
     public void onDestroy() {
         super.onDestroy();
-
-        if(tts != null){
-            unbindService((ServiceConnection) tts);
+        if(tts!=null){ // 사용한 TTS객체 제거
+            tts.stop();
+            tts.shutdown();
         }
-    }*/
+        super.onDestroy();
+    }
 }
