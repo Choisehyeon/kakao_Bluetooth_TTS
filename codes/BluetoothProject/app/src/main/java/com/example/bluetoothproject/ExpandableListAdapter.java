@@ -168,6 +168,10 @@ public class ExpandableListAdapter extends RecyclerView.Adapter<RecyclerView.Vie
                 itemController1.refferalItem = item;
                 itemController1.child_title.setText(item.text1);
 
+                SharedPreferences spf = context.getSharedPreferences("pref", Context.MODE_PRIVATE);
+                SharedPreferences.Editor editor = spf.edit();
+                SharedPreferences sharedPreferences = context.getSharedPreferences("pref", Context.MODE_PRIVATE);
+
 
                 //블루투스 on/off
                 if (item.text1.equals("현재 상태")) {
@@ -229,18 +233,14 @@ public class ExpandableListAdapter extends RecyclerView.Adapter<RecyclerView.Vie
                 }
                 //발신자 버튼 on/off
                 if(item.text1.equals("발신자")) {
-                    boolean ischeck = false;
-                    SharedPreferences sharedPreferences = context.getSharedPreferences("pref", Context.MODE_PRIVATE);
-                    ischeck = sharedPreferences.getBoolean("sender", false);
-                    itemController1.aSwitch.setChecked(ischeck);
+                    boolean check = false;
+                    check = sharedPreferences.getBoolean("sender", false);
+                    itemController1.aSwitch.setChecked(check);
 
                     itemController1.aSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
                         @Override
                         public void onCheckedChanged(CompoundButton compoundButton, boolean isChecked) {
                             //버튼이 on되면 NotificationListner class로 true가 보내짐
-                            SharedPreferences spf = context.getSharedPreferences("pref", Context.MODE_PRIVATE);
-                            SharedPreferences.Editor editor = spf.edit();
-
                             editor.putBoolean("sender", isChecked);
                             editor.commit();
                             intent.putExtra("sender_check", isChecked);
@@ -250,18 +250,14 @@ public class ExpandableListAdapter extends RecyclerView.Adapter<RecyclerView.Vie
                 }
                 //발신시간 버튼 on/off
                 if(item.text1.equals("발신시간")) {
-                    boolean ischeck = false;
-                    SharedPreferences sharedPreferences = context.getSharedPreferences("pref", Context.MODE_PRIVATE);
-                    ischeck = sharedPreferences.getBoolean("time", false);
-                    itemController1.aSwitch.setChecked(ischeck);
+                    boolean check = false;
+                    check = sharedPreferences.getBoolean("time", false);
+                    itemController1.aSwitch.setChecked(check);
 
                     itemController1.aSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
                         @Override
                         public void onCheckedChanged(CompoundButton compoundButton, boolean isChecked) {
                             //버튼이 on되면 NotificationListner class로 true가 보내짐
-                            SharedPreferences spf = context.getSharedPreferences("pref", Context.MODE_PRIVATE);
-                            SharedPreferences.Editor editor = spf.edit();
-
                             editor.putBoolean("time", isChecked);
                             editor.commit();
                             intent.putExtra("time_check", isChecked);
@@ -278,6 +274,7 @@ public class ExpandableListAdapter extends RecyclerView.Adapter<RecyclerView.Vie
                 itemController2.child_title.setText(item.text1);
                 itemController2.child_content.setText(bDevice);
 
+                //브로드캐스트 리시버를 통해 블루투스에 연결된 기기 이름 가져옴
                 blReceiver = new BroadcastReceiver() {
                     public void onReceive(Context context, Intent intent) {
                         String action = intent.getAction();
@@ -358,7 +355,7 @@ public class ExpandableListAdapter extends RecyclerView.Adapter<RecyclerView.Vie
 
 
 
-                SharedPreferences sharedPreferences = context.getSharedPreferences("pref", Context.MODE_PRIVATE);
+                sharedPreferences = context.getSharedPreferences("pref", Context.MODE_PRIVATE);
                 int posi = 0;
                 float speed = sharedPreferences.getFloat("speed", 0);
                 Log.i("speed_value", String.valueOf(speed));
@@ -497,6 +494,7 @@ public class ExpandableListAdapter extends RecyclerView.Adapter<RecyclerView.Vie
             this.text1 = text1;
         }
     }
+
 
 
 }

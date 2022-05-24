@@ -29,6 +29,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.os.Build;
@@ -59,6 +60,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
     private ActivityMain1Binding binding;
     private Intent intent;
     private String bDevice;
+    SharedPreferences.Editor editor;
 
     public static final String[] ANDROID_12_BLUETOOTH_PERMISSIONS = { Manifest.permission.BLUETOOTH_SCAN, Manifest.permission.BLUETOOTH_CONNECT} ;
 
@@ -74,6 +76,11 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
 
         binding = ActivityMain1Binding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
+
+        //sharePreference에 저장된 값을 앱이 종료되면 다른 값으로 바꾸기 위해 사용
+        SharedPreferences spf = getBaseContext().getSharedPreferences("pref", Context.MODE_PRIVATE);
+        editor = spf.edit();
+
 
         SlidingUpPanelLayout sliding = binding.mainFrame;
         intent = new Intent(MainActivity.this, NotificationListener.class);
@@ -218,5 +225,11 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
 
     }
 
-
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        editor.putBoolean("sender", false);
+        editor.putBoolean("time", false);
+        editor.commit();
+    }
 }
