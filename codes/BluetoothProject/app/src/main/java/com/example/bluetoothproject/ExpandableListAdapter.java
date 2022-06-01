@@ -52,6 +52,7 @@ public class ExpandableListAdapter extends RecyclerView.Adapter<RecyclerView.Vie
     public static final int CHILD_TI = 3;
     public static final int CHILD_TSB = 4;
     public static final int CHILD_TSP = 5;
+    public static final int CHILD_ATS = 6;
 
 
     Context context;
@@ -59,6 +60,7 @@ public class ExpandableListAdapter extends RecyclerView.Adapter<RecyclerView.Vie
     String bDevice = "없음";
     Intent intent;
     View view;
+    boolean sender_check = false;
     BroadcastReceiver blReceiver;
 
     private final List<Item> data;
@@ -67,9 +69,6 @@ public class ExpandableListAdapter extends RecyclerView.Adapter<RecyclerView.Vie
     public ExpandableListAdapter(List<Item> data) {
         this.data = data;
     }
-
-
-
 
 
     @NonNull
@@ -109,9 +108,11 @@ public class ExpandableListAdapter extends RecyclerView.Adapter<RecyclerView.Vie
                 intent = new Intent(view.getContext(), NotificationListener.class);
                 ListChildTSPViewHolder child_tsp = new ListChildTSPViewHolder(view);
                 return child_tsp;
-
-
-
+            case CHILD_ATS:
+                LayoutInflater inflater5 = (LayoutInflater) parent.getContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+                view = inflater5.inflate(R.layout.child_ts, parent, false);
+                ListChildATSViewHolder child_ats = new ListChildATSViewHolder(view);
+                return child_ats;
         }
         return null;
     }
@@ -119,7 +120,8 @@ public class ExpandableListAdapter extends RecyclerView.Adapter<RecyclerView.Vie
     @Override
     public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
         final Item item = data.get(position);
-        start();
+        start(context);
+        final AudioManager audioManager = (AudioManager) context.getSystemService(AUDIO_SERVICE);
 
         switch (item.type) {
             case HEADER:
@@ -140,7 +142,7 @@ public class ExpandableListAdapter extends RecyclerView.Adapter<RecyclerView.Vie
                             int count = 0;
                             int pos = data.indexOf(itemController.refferalItem);
                             while (data.size() > pos + 1 && (data.get(pos + 1).type == CHILD_TS || data.get(pos + 1).type == CHILD_TT || data.get(pos + 1).type == CHILD_TI
-                                    || data.get(pos + 1).type == CHILD_TSB || data.get(pos + 1).type == CHILD_TSP)) {
+                                    || data.get(pos + 1).type == CHILD_TSB || data.get(pos + 1).type == CHILD_TSP || data.get(pos+1).type == CHILD_ATS)) {
                                 item.invisibleChildren.add(data.remove(pos + 1));
                                 count++;
                             }
@@ -177,13 +179,13 @@ public class ExpandableListAdapter extends RecyclerView.Adapter<RecyclerView.Vie
                 if (item.text1.equals("현재 상태")) {
 
                     //블루투스 현재 상태에 따라 버튼이 세팅됨
-                   if (bAdapter.getState() == BluetoothAdapter.STATE_ON) {
+                    if (bAdapter.getState() == BluetoothAdapter.STATE_ON) {
                         itemController1.aSwitch.setChecked(true);
                     } else {
                         itemController1.aSwitch.setChecked(false);
                     }
 
-                   //버튼 on/off에 따라 블루투스 사용 설정됨
+                    //버튼 on/off에 따라 블루투스 사용 설정됨
                     itemController1.aSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
                         @SuppressLint("MissingPermission")
                         @Override
@@ -206,33 +208,9 @@ public class ExpandableListAdapter extends RecyclerView.Adapter<RecyclerView.Vie
                         }
                     });
                 }
-                //진동알림과 소리 알림 설정
-                if(item.text1.equals("진동 알림")) {
-                    AudioManager audioManager;
-                    audioManager = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
-                    //현재 모드에 따라 버튼이 세팅됨
-                    if (audioManager.getRingerMode() == AudioManager.RINGER_MODE_VIBRATE) {
-                        itemController1.aSwitch.setChecked(true);
-                    } else {
-                        itemController1.aSwitch.setChecked(false);
-                    }
-                    //버튼에 따라 진동과 소리 설정 가능
-                    itemController1.aSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-                        @SuppressLint("MissingPermission")
-                        @Override
-                        public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
 
-                            if (isChecked) {
-                                audioManager.setRingerMode(AudioManager.RINGER_MODE_VIBRATE);
-                            } else {
-                                audioManager.setRingerMode(AudioManager.RINGER_MODE_SILENT);
-                            }
-                        }
-                    });
-
-                }
                 //발신자 버튼 on/off
-                if(item.text1.equals("발신자")) {
+                if (item.text1.equals("발신자")) {
                     boolean check = false;
                     check = sharedPreferences.getBoolean("sender", false);
                     itemController1.aSwitch.setChecked(check);
@@ -243,13 +221,11 @@ public class ExpandableListAdapter extends RecyclerView.Adapter<RecyclerView.Vie
                             //버튼이 on되면 NotificationListner class로 true가 보내짐
                             editor.putBoolean("sender", isChecked);
                             editor.commit();
-                            intent.putExtra("sender_check", isChecked);
-                            view.getContext().startService(intent);
                         }
                     });
                 }
                 //발신시간 버튼 on/off
-                if(item.text1.equals("발신시간")) {
+                if (item.text1.equals("발신시간")) {
                     boolean check = false;
                     check = sharedPreferences.getBoolean("time", false);
                     itemController1.aSwitch.setChecked(check);
@@ -260,8 +236,7 @@ public class ExpandableListAdapter extends RecyclerView.Adapter<RecyclerView.Vie
                             //버튼이 on되면 NotificationListner class로 true가 보내짐
                             editor.putBoolean("time", isChecked);
                             editor.commit();
-                            intent.putExtra("time_check", isChecked);
-                            view.getContext().startService(intent);
+
                         }
                     });
                 }
@@ -295,7 +270,6 @@ public class ExpandableListAdapter extends RecyclerView.Adapter<RecyclerView.Vie
                 };
 
 
-
                 break;
             case CHILD_TI:
                 //블루투스 설정 들어가는 부분
@@ -317,7 +291,7 @@ public class ExpandableListAdapter extends RecyclerView.Adapter<RecyclerView.Vie
                 itemController4.refferalItem = item;
                 itemController4.child_title.setText(item.text1);
 
-                final AudioManager audioManager = (AudioManager) context.getSystemService(AUDIO_SERVICE);
+
                 int nMax = audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC);
                 int nCurrentVolumn = audioManager
                         .getStreamVolume(AudioManager.STREAM_MUSIC);
@@ -354,7 +328,6 @@ public class ExpandableListAdapter extends RecyclerView.Adapter<RecyclerView.Vie
                 itemController5.spinner.setAdapter(adapter);
 
 
-
                 sharedPreferences = context.getSharedPreferences("pref", Context.MODE_PRIVATE);
                 int posi = 0;
                 float speed = sharedPreferences.getFloat("speed", 0);
@@ -382,20 +355,47 @@ public class ExpandableListAdapter extends RecyclerView.Adapter<RecyclerView.Vie
                     }
 
                     @Override
-                    public void onNothingSelected(AdapterView<?> adapterView) { }
+                    public void onNothingSelected(AdapterView<?> adapterView) {
+                    }
                 });
 
                 break;
 
+            case CHILD_ATS:
+                final ListChildATSViewHolder itemController6 = (ListChildATSViewHolder) holder;
+                itemController6.refferalItem = item;
+                itemController6.child_title.setText(item.text1);
+
+                //진동알림과 소리 알림 설정
+
+                //현재 모드에 따라 버튼이 세팅됨
+                if (audioManager.getRingerMode() == AudioManager.RINGER_MODE_VIBRATE) {
+                    itemController6.aSwitch.setChecked(true);
+                } else {
+                    itemController6.aSwitch.setChecked(false);
+                }
+                //버튼에 따라 진동과 소리 설정 가능
+                itemController6.aSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+                    @SuppressLint("MissingPermission")
+                    @Override
+                    public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+
+                        if (isChecked) {
+                            audioManager.setRingerMode(AudioManager.RINGER_MODE_VIBRATE);
+                        } else {
+                            audioManager.setRingerMode(AudioManager.RINGER_MODE_SILENT);
+                        }
+                    }
+                });
+                break;
         }
 
     }
 
-    public void start() {
+    public void start(Context context) {
         context.registerReceiver(blReceiver, new IntentFilter("android.bluetooth.device.action.ACL_CONNECTED"));
         context.registerReceiver(this.blReceiver, new IntentFilter("android.bluetooth.device.action.ACL_DISCONNECTED"));
     }
-
 
 
     @Override
@@ -480,6 +480,17 @@ public class ExpandableListAdapter extends RecyclerView.Adapter<RecyclerView.Vie
             spinner = (Spinner) itemView.findViewById(R.id.spinner);
         }
     }
+    private static class ListChildATSViewHolder extends RecyclerView.ViewHolder {
+        public TextView child_title;
+        public Switch aSwitch;
+        public Item refferalItem;
+
+        public ListChildATSViewHolder(View itemView) {
+            super(itemView);
+            child_title = (TextView) itemView.findViewById(R.id.child_title_ts);
+            aSwitch = itemView.findViewById(R.id.sw);
+        }
+    }
 
     public static class Item {
         public int type;
@@ -494,7 +505,6 @@ public class ExpandableListAdapter extends RecyclerView.Adapter<RecyclerView.Vie
             this.text1 = text1;
         }
     }
-
 
 
 }

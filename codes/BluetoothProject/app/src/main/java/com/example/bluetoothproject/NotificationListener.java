@@ -9,6 +9,7 @@ import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.service.notification.NotificationListenerService;
 import android.service.notification.StatusBarNotification;
 import android.speech.tts.TextToSpeech;
@@ -28,9 +29,7 @@ public class NotificationListener extends NotificationListenerService {
 
     private TextToSpeech tts;
     private float speed = 1.0F;
-    private boolean sender_check  = false;
-    private boolean time_check  = false;
-    private boolean func_check = true;
+    SharedPreferences spf;
 
     @Override
     public void onCreate() {
@@ -47,6 +46,7 @@ public class NotificationListener extends NotificationListenerService {
                 }
             }
         });
+        spf = getApplicationContext().getSharedPreferences("pref", Context.MODE_PRIVATE);
 
     }
 
@@ -67,9 +67,6 @@ public class NotificationListener extends NotificationListenerService {
         //intent로 보내진 값들을 받아옴
         speed = intent.getFloatExtra("speed_value", 0);
         tts.setSpeechRate(speed);
-        sender_check = intent.getBooleanExtra("sender_check", false);
-        time_check = intent.getBooleanExtra("time_check", false);
-        func_check = intent.getBooleanExtra("fuc_check", true);
     }
 
     @Override
@@ -89,14 +86,12 @@ public class NotificationListener extends NotificationListenerService {
                 Date date = calendar.getTime();
                 String current = new SimpleDateFormat("yyyy년 MM월 dd일 HH시 mm분").format(date);
                 Log.i("sender", sender);
+                System.out.println(spf.getBoolean("sender", false));
                 Log.i("speed_value", String.valueOf(speed));
-                Log.i("sender_check", String.valueOf(sender_check));
-                Log.i("time_check", String.valueOf(time_check));
-                Log.i("func_check", String.valueOf(func_check));
 
                 //message가 null이 아니거나 기능을 사용할 때 tts.speak 사용
-                if(message != null && func_check) {
-                    if(sender_check ) {
+                if(message != null && spf.getBoolean("func", true)) {
+                    if(spf.getBoolean("sender",false) ) {
                         result += sender;
                     }
 
@@ -106,7 +101,7 @@ public class NotificationListener extends NotificationListenerService {
                     else {
                         result += message;
                     }
-                    if(time_check) {
+                    if(spf.getBoolean("time",false) ) {
                         result += current;
                     }
 

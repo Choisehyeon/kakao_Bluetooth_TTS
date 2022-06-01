@@ -74,6 +74,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
         //세로방향 유지
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
 
+
         binding = ActivityMain1Binding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
@@ -88,6 +89,8 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
 
         //permissionCheck();
 
+
+        //안드로이드 블루투스 권한
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             if (!EasyPermissions.hasPermissions(this, ANDROID_12_BLUETOOTH_PERMISSIONS)) {
                 EasyPermissions.requestPermissions(this, "please give me bluetooth permissions", 2,ANDROID_12_BLUETOOTH_PERMISSIONS);
@@ -99,6 +102,12 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
 
 
         }
+
+        if(ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO)!=PackageManager.PERMISSION_GRANTED)
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.RECORD_AUDIO},1);
+
+        if(ContextCompat.checkSelfPermission(this, Manifest.permission.RECEIVE_SMS)!= PackageManager.PERMISSION_GRANTED)
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.RECEIVE_SMS},1);
 
 
         //notification 권한 설정
@@ -125,9 +134,8 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
                 binding.imageOn.setImageResource(R.drawable.on);
                 binding.imageOff.setImageResource(R.drawable.off_trans);
                 binding.speakingOnoff.setImageResource(R.drawable.speaking_on);
-                //기능을 on하면 NotificationService에 true 보냄.
-                intent.putExtra("fuc_check", true);
-                startService(intent);
+                editor.putBoolean("func", true);
+                editor.commit();
             }
         });
 
@@ -140,9 +148,8 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
                 binding.imageOn.setImageResource(R.drawable.on_trans);
                 binding.imageOff.setImageResource(R.drawable.off);
                 binding.speakingOnoff.setImageResource(R.drawable.speaking_off);
-                //기능을 off하면 NotificationService에 false 보냄.
-                intent.putExtra("fuc_check", false);
-                startService(intent);
+                editor.putBoolean("func", false);
+                editor.commit();
             }
         });
 
@@ -162,7 +169,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
         sound.invisibleChildren = new ArrayList<>();
         sound.invisibleChildren.add(new ExpandableListAdapter.Item(ExpandableListAdapter.CHILD_TSB, "볼륨"));
         sound.invisibleChildren.add(new ExpandableListAdapter.Item(ExpandableListAdapter.CHILD_TSP, "읽기 속도"));
-        sound.invisibleChildren.add(new ExpandableListAdapter.Item(ExpandableListAdapter.CHILD_TS, "진동 알림"));
+        sound.invisibleChildren.add(new ExpandableListAdapter.Item(ExpandableListAdapter.CHILD_ATS, "진동 알림"));
         data.add(sound);
 
         ExpandableListAdapter.Item text = new ExpandableListAdapter.Item(ExpandableListAdapter.HEADER, "텍스트 내용 설정");
@@ -230,6 +237,8 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
         super.onDestroy();
         editor.putBoolean("sender", false);
         editor.putBoolean("time", false);
+        editor.putBoolean("func", true);
+        editor.putFloat("speed", 1);
         editor.commit();
     }
 }
